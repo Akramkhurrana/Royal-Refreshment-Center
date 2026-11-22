@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -18,6 +19,7 @@ import "./App.css";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [settings, setSettings] = useState({
     name: "Royal Refreshment Center",
@@ -76,24 +78,27 @@ function App() {
     },
   ]);
 
+  const handleNavigate = (page) => {
+    setActivePage(page);
+    setMobileMenuOpen(false);
+  };
+
   const renderPage = () => {
     switch (activePage) {
       case "Dashboard":
-        return <Dashboard
-      orders={orders}
-      expenses={expenses}/>;
+        return <Dashboard orders={orders} expenses={expenses} />;
 
-case "POS / New Order":
-  return (
-    <POS
-      foods={foods}
-      categories={categories}
-      settings={settings}
-      onOrderComplete={(order) =>
-        setOrders((current) => [order, ...current])
-      }
-    />
-  );
+      case "POS / New Order":
+        return (
+          <POS
+            foods={foods}
+            categories={categories}
+            settings={settings}
+            onOrderComplete={(order) =>
+              setOrders((current) => [order, ...current])
+            }
+          />
+        );
 
       case "Food Management":
         return (
@@ -153,13 +158,35 @@ case "POS / New Order":
   };
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${mobileMenuOpen ? "mobile-menu-open" : ""}`}>
+
       <Sidebar
         activePage={activePage}
-        onNavigate={setActivePage}
+        onNavigate={handleNavigate}
       />
 
+      {mobileMenuOpen && (
+        <button
+          className="mobile-sidebar-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Close menu"
+        />
+      )}
+
       <div className="main-layout">
+
+        <div className="mobile-menu-bar">
+          <button
+            className="mobile-menu-button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+
+          <strong>Royal Refreshment Center</strong>
+        </div>
+
         <Header />
 
         <main className="main-content">
@@ -169,6 +196,7 @@ case "POS / New Order":
         <footer className="app-footer">
           © 2026 Royal Refreshment Center. All rights reserved.
         </footer>
+
       </div>
     </div>
   );
