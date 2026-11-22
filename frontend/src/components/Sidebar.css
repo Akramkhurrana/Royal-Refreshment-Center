@@ -1,0 +1,139 @@
+
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  overflow-y: auto;
+  flex-shrink: 0;
+
+  background: #172033;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 25px 17px;
+}
+
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 5px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+}
+
+.brand-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 13px;
+  background: #f28b35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-brand h2 {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.sidebar-brand p {
+  font-size: 10px;
+  color: #aab4c5;
+  margin-top: 5px;
+}
+
+.sidebar-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #8290a5;
+  margin: 30px 10px 15px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sidebar-link {
+  width: 100%;
+  min-height: 46px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #b8c1d0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 13px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.sidebar-link.active {
+  background: #f28b35;
+  color: white;
+  box-shadow: 0 5px 15px rgba(242,139,53,0.18);
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 25px;
+}
+
+.sidebar-admin {
+  margin-top: 20px;
+  padding: 16px 7px 5px;
+  border-top: 1px solid rgba(255,255,255,0.09);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.admin-avatar {
+  width: 38px;
+  height: 38px;
+  background: #354158;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 700;
+}
+
+.sidebar-admin div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sidebar-admin strong {
+  font-size: 11px;
+}
+
+.sidebar-admin span {
+  font-size: 10px;
+  color: #aab4c5;
+}
+
+@media (max-width: 650px) {
+  .sidebar {
+    display: none;
+  }
+}

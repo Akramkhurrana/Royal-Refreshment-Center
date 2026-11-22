@@ -1,0 +1,148 @@
+.top-header {
+  min-height: 92px;
+  background: #ffffff;
+  border-bottom: 1px solid #e9edf3;
+  padding: 18px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.header-left h1 {
+  font-size: 23px;
+  font-weight: 700;
+  color: #172033;
+  letter-spacing: -0.6px;
+}
+
+.header-left p {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #8791a3;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.header-search {
+  width: 220px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  background: #f6f7f9;
+  border: 1px solid #edf0f4;
+  border-radius: 8px;
+  color: #929bad;
+}
+
+.header-search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 11px;
+  color: #172033;
+}
+
+.header-date {
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #edf0f4;
+  border-radius: 8px;
+  color: #596579;
+  font-size: 11px;
+}
+
+.notification-btn {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #f6f7f9;
+  border: none;
+  border-radius: 8px;
+  color: #596579;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f28b35;
+}
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-left: 14px;
+  border-left: 1px solid #edf0f4;
+  color: #7b8495;
+}
+
+.profile-avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff0e3;
+  color: #e77b27;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-details strong {
+  color: #263247;
+  font-size: 11px;
+}
+
+.profile-details span {
+  color: #929bad;
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .top-header {
+    padding: 16px 20px;
+  }
+
+  .header-search {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .profile-details {
+    display: none;
+  }
+}
