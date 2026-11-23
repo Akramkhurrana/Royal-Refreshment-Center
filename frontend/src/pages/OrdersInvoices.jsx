@@ -7,6 +7,7 @@ import {
   Printer,
   FileText,
   ShoppingBag,
+  Wallet,
 } from "lucide-react";
 
 import "./OrdersInvoices.css";
@@ -17,6 +18,30 @@ function OrdersInvoices({ orders = [] }) {
 
   const filteredOrders = orders.filter((order) =>
     String(order.number).toLowerCase().includes(search.toLowerCase())
+  );
+
+  const formatRs = (amount) =>
+    `Rs. ${Number(amount || 0).toLocaleString()}`;
+
+  const getRemaining = (order) =>
+    Math.max(
+      0,
+      Number(order.total || 0) - Number(order.paid || 0)
+    );
+
+  const totalSales = orders.reduce(
+    (sum, order) => sum + Number(order.total || 0),
+    0
+  );
+
+  const totalReceived = orders.reduce(
+    (sum, order) => sum + Number(order.paid || 0),
+    0
+  );
+
+  const totalRemaining = orders.reduce(
+    (sum, order) => sum + getRemaining(order),
+    0
   );
 
   const printInvoice = () => {
@@ -50,12 +75,23 @@ function OrdersInvoices({ orders = [] }) {
           <FileText size={24} />
           <div>
             <span>Total Sales</span>
-            <h3>
-              Rs.{" "}
-              {orders
-                .reduce((sum, order) => sum + Number(order.total || 0), 0)
-                .toLocaleString()}
-            </h3>
+            <h3>{formatRs(totalSales)}</h3>
+          </div>
+        </div>
+
+        <div className="invoice-stat">
+          <Wallet size={24} />
+          <div>
+            <span>Total Received</span>
+            <h3>{formatRs(totalReceived)}</h3>
+          </div>
+        </div>
+
+        <div className="invoice-stat">
+          <Receipt size={24} />
+          <div>
+            <span>Remaining Payments</span>
+            <h3>{formatRs(totalRemaining)}</h3>
           </div>
         </div>
       </div>
@@ -86,45 +122,80 @@ function OrdersInvoices({ orders = [] }) {
                 <th>Date & Time</th>
                 <th>Items</th>
                 <th>Total Amount</th>
+                <th>Paid</th>
+                <th>Remaining</th>
+                <th>Status</th>
                 <th>Payment Method</th>
                 <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.number}>
-                  <td>
-                    <strong>INV-{order.number}</strong>
-                  </td>
+              {filteredOrders.map((order) => {
+                const remaining = getRemaining(order);
 
-                  <td>{order.date}</td>
+                return (
+                  <tr key={order.number}>
+                    <td>
+                      <strong>INV-{order.number}</strong>
+                    </td>
 
-                  <td>{order.items?.length || 0} items</td>
+                    <td>{order.date}</td>
 
-                  <td>
-                    <strong>
-                      Rs. {Number(order.total).toLocaleString()}
-                    </strong>
-                  </td>
+                    <td>{order.items?.length || 0} items</td>
 
-                  <td>{order.paymentMethod}</td>
+                    <td>
+                      <strong>{formatRs(order.total)}</strong>
+                    </td>
 
-                  <td>
-                    <button
-                      className="invoice-action-btn"
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      <Eye size={16} />
-                      View Invoice
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    <td>{formatRs(order.paid)}</td>
+
+                    <td>
+                      <strong
+                        style={{
+                          color: remaining > 0 ? "#dc5656" : "#15945b",
+                        }}
+                      >
+                        {formatRs(remaining)}
+                      </strong>
+                    </td>
+
+                    <td>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "5px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          background:
+                            remaining > 0 ? "#fff0e6" : "#e8f8ef",
+                          color:
+                            remaining > 0 ? "#c56a20" : "#15945b",
+                        }}
+                      >
+                        {remaining > 0 ? "Partial" : "Paid"}
+                      </span>
+                    </td>
+
+                    <td>{order.paymentMethod}</td>
+
+                    <td>
+                      <button
+                        className="invoice-action-btn"
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <Eye size={16} />
+                        View Invoice
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="invoices-empty">
+                  <td colSpan="9" className="invoices-empty">
                     <Receipt size={35} />
                     <strong>No invoices found</strong>
                     <span>Completed invoices will appear here.</span>
@@ -174,13 +245,17 @@ function OrdersInvoices({ orders = [] }) {
               </div>
 
               {selectedOrder.items.map((item, index) => (
-                <div className="invoice-item" key={`${item.id}-${index}`}>
+                <div
+                  className="invoice-item"
+                  key={`${item.id}-${index}`}
+                >
                   <span>{item.name}</span>
                   <span>{item.quantity}</span>
-                  <span>Rs. {Number(item.price).toLocaleString()}</span>
+                  <span>{formatRs(item.price)}</span>
                   <span>
-                    Rs.{" "}
-                    {(Number(item.price) * item.quantity).toLocaleString()}
+                    {formatRs(
+                      Number(item.price) * item.quantity
+                    )}
                   </span>
                 </div>
               ))}
@@ -188,22 +263,46 @@ function OrdersInvoices({ orders = [] }) {
 
             <div className="invoice-total">
               <span>Grand Total</span>
-              <strong>
-                Rs. {Number(selectedOrder.total).toLocaleString()}
-              </strong>
+              <strong>{formatRs(selectedOrder.total)}</strong>
             </div>
 
             <div className="invoice-payment-info">
               <p>
-                Payment Method: <strong>{selectedOrder.paymentMethod}</strong>
+                Payment Method:{" "}
+                <strong>{selectedOrder.paymentMethod}</strong>
               </p>
+
               <p>
                 Paid Amount:{" "}
-                <strong>Rs. {Number(selectedOrder.paid).toLocaleString()}</strong>
+                <strong>{formatRs(selectedOrder.paid)}</strong>
               </p>
-                <p>
-                Change:{" "}
-                <strong>Rs. {Number(selectedOrder.balance).toLocaleString()}</strong>
+
+              <p>
+                Remaining Amount:{" "}
+                <strong style={{ color: "#dc5656" }}>
+                  {formatRs(getRemaining(selectedOrder))}
+                </strong>
+              </p>
+
+              <p>
+                Change / Return:{" "}
+                <strong>{formatRs(selectedOrder.balance)}</strong>
+              </p>
+
+              <p>
+                Payment Status:{" "}
+                <strong
+                  style={{
+                    color:
+                      getRemaining(selectedOrder) > 0
+                        ? "#c56a20"
+                        : "#15945b",
+                  }}
+                >
+                  {getRemaining(selectedOrder) > 0
+                    ? "Partial Payment"
+                    : "Paid"}
+                </strong>
               </p>
             </div>
 

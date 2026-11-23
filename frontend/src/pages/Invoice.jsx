@@ -17,6 +17,9 @@ function Invoice({ order, onClose, settings = {} }) {
   const footerMessage =
     settings.footer || "Thank you for visiting us!";
 
+  const formatRs = (amount) =>
+    `Rs. ${Number(amount || 0).toLocaleString()}`;
+
   const printInvoice = () => {
     window.print();
   };
@@ -24,7 +27,6 @@ function Invoice({ order, onClose, settings = {} }) {
   return (
     <div className="invoice-overlay">
       <div className="invoice-modal">
-
         <div className="invoice-actions">
           <button
             onClick={printInvoice}
@@ -43,7 +45,6 @@ function Invoice({ order, onClose, settings = {} }) {
         </div>
 
         <div className="invoice-print-area">
-
           <div className="invoice-header">
             <img
               src={restaurantLogo}
@@ -99,14 +100,14 @@ function Invoice({ order, onClose, settings = {} }) {
                 <tr key={item.id}>
                   <td>{item.name}</td>
 
-                  <td>
-                    Rs. {item.price.toLocaleString()}
-                  </td>
+                  <td>{formatRs(item.price)}</td>
 
                   <td>{item.quantity}</td>
 
                   <td>
-                    Rs. {(item.price * item.quantity).toLocaleString()}
+                    {formatRs(
+                      Number(item.price) * item.quantity
+                    )}
                   </td>
                 </tr>
               ))}
@@ -116,23 +117,26 @@ function Invoice({ order, onClose, settings = {} }) {
           <div className="invoice-summary">
             <div>
               <span>Total Amount</span>
-              <strong>
-                Rs. {order.total.toLocaleString()}
-              </strong>
+              <strong>{formatRs(order.total)}</strong>
             </div>
 
             <div>
               <span>Paid Amount</span>
-              <strong>
-                Rs. {order.paid.toLocaleString()}
-              </strong>
+              <strong>{formatRs(order.paid)}</strong>
             </div>
 
-            {order.balance > 0 && (
+            {Number(order.balance) > 0 && (
               <div>
-                <span>Change</span>
+                <span>Return / Change</span>
+                <strong>{formatRs(order.balance)}</strong>
+              </div>
+            )}
+
+            {Number(order.paid) < Number(order.total) && (
+              <div>
+                <span>Remaining Amount</span>
                 <strong>
-                  Rs. {order.balance.toLocaleString()}
+                  {formatRs(order.total - order.paid)}
                 </strong>
               </div>
             )}
@@ -143,7 +147,6 @@ function Invoice({ order, onClose, settings = {} }) {
             <p>{footerMessage}</p>
             <p>We hope to serve you again.</p>
           </div>
-
         </div>
       </div>
     </div>

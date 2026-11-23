@@ -1,5 +1,8 @@
 
-/* INVOICE OVERLAY */
+/* =====================================
+   ROYAL REFRESHMENT CENTER - INVOICE
+===================================== */
+
 .invoice-overlay {
   position: fixed;
   inset: 0;
@@ -24,6 +27,7 @@
 }
 
 /* ACTION BUTTONS */
+
 .invoice-actions {
   display: flex;
   justify-content: flex-end;
@@ -59,6 +63,7 @@
 }
 
 /* INVOICE PAPER */
+
 .invoice-print-area {
   background: #fff;
   color: #263247;
@@ -67,6 +72,7 @@
 }
 
 /* HEADER */
+
 .invoice-header {
   text-align: center;
   padding: 22px 15px;
@@ -88,6 +94,18 @@
   margin-top: 8px;
 }
 
+.invoice-logo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 12px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* HEADER LINE */
+
 .invoice-line {
   height: 4px;
   background: #f28b35;
@@ -96,6 +114,7 @@
 }
 
 /* DETAILS */
+
 .invoice-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -114,6 +133,7 @@
 }
 
 /* TABLE */
+
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
@@ -149,6 +169,7 @@
 }
 
 /* TOTAL SUMMARY */
+
 .invoice-summary {
   width: 100%;
   max-width: 340px;
@@ -191,6 +212,7 @@
 }
 
 /* FOOTER */
+
 .invoice-footer {
   text-align: center;
   border-top: 1px dashed #dce1e8;
@@ -212,7 +234,12 @@
 }
 
 /* RESPONSIVE */
+
 @media (max-width: 600px) {
+  .invoice-overlay {
+    padding: 10px;
+  }
+
   .invoice-modal {
     padding: 12px;
   }
@@ -236,7 +263,8 @@
   }
 }
 
-/* PROFESSIONAL PDF / PRINT */
+/* PRINT DESIGN */
+
 @media print {
   @page {
     size: A4;
@@ -293,11 +321,7 @@
     margin: 0;
   }
 
-  .invoice-header {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-
+  .invoice-header,
   .invoice-table th,
   .invoice-table tbody tr:nth-child(even),
   .invoice-summary {
@@ -307,17 +331,11 @@
 
   .invoice-table tr {
     break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .invoice-footer {
     break-inside: avoid;
+    page-break-inside: avoid;
   }
-}
-.invoice-logo {
-  width: 90px;
-  height: 90px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto 12px;
-  border-radius: 10px;
 }

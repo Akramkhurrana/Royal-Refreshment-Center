@@ -25,7 +25,17 @@ function POS({
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [paidAmount, setPaidAmount] = useState("");
-  const [orderNumber, setOrderNumber] = useState(1001);
+
+  const [orderNumber, setOrderNumber] = useState(() => {
+    const savedNumber = Number(
+      localStorage.getItem("royalRefreshmentNextOrderNumber")
+    );
+
+    return Number.isSafeInteger(savedNumber) && savedNumber >= 1001
+      ? savedNumber
+      : 1001;
+  });
+
   const [completedOrder, setCompletedOrder] = useState(null);
 
   const products = foods
@@ -41,7 +51,7 @@ function POS({
     const matchesCategory =
       category === "All" || product.category === category;
 
-    const matchesSearch = product.name
+    const matchesSearch = (product.name || "")
       .toLowerCase()
       .includes(search.toLowerCase());
 
@@ -90,13 +100,27 @@ function POS({
     0
   );
 
-  const completeOrder = () => {
-    const paid = Number(paidAmount);
+  const totalQuantity = cart.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
-    if (!Number.isFinite(paid) || paid < subtotal) {
-      alert(
-        "Please enter a valid paid amount equal to or greater than the total."
-      );
+  // Payment calculations
+  const paid = paidAmount.trim() === "" ? 0 : Number(paidAmount);
+
+  const remainingAmount = Math.max(0, subtotal - paid);
+  const changeAmount = Math.max(0, paid - subtotal);
+
+  // Allow partial, exact, and extra payments
+  const validPayment =
+    paidAmount.trim() !== "" &&
+    Number.isFinite(paid) &&
+    paid > 0;
+
+  // Complete Order
+  const completeOrder = () => {
+    if (!validPayment) {
+      alert("Please enter a valid payment amount greater than zero.");
       return;
     }
 
@@ -105,8 +129,13 @@ function POS({
       items: cart,
       total: subtotal,
       paid,
-      balance: paid - subtotal,
+      remainingAmount,
+      balance: changeAmount,
       paymentMethod,
+      paymentStatus:
+        remainingAmount > 0
+          ? "Partial Payment"
+          : "Paid",
       date: new Date().toLocaleString(),
     };
 
@@ -114,7 +143,15 @@ function POS({
 
     onOrderComplete?.(order);
 
-    setOrderNumber((number) => number + 1);
+    const nextNumber = orderNumber + 1;
+
+    setOrderNumber(nextNumber);
+
+    localStorage.setItem(
+      "royalRefreshmentNextOrderNumber",
+      nextNumber
+    );
+
     setCart([]);
     setPaidAmount("");
     setShowPayment(false);
@@ -208,7 +245,9 @@ function POS({
           <div className="cart-heading">
             <div>
               <h3>Current Order</h3>
-              <p>{cart.length} different items</p>
+              <p>
+                {cart.length} different items / {totalQuantity} total quantity
+              </p>
             </div>
 
             <ShoppingCart size={21} />
@@ -235,9 +274,7 @@ function POS({
 
                   <div className="cart-item-actions">
                     <button
-                      onClick={() =>
-                        updateQuantity(item.id, -1)
-                      }
+                      onClick={() => updateQuantity(item.id, -1)}
                     >
                       <Minus size={13} />
                     </button>
@@ -245,9 +282,7 @@ function POS({
                     <span>{item.quantity}</span>
 
                     <button
-                      onClick={() =>
-                        updateQuantity(item.id, 1)
-                      }
+                      onClick={() => updateQuantity(item.id, 1)}
                     >
                       <Plus size={13} />
                     </button>
@@ -321,9 +356,7 @@ function POS({
 
             <select
               value={paymentMethod}
-              onChange={(e) =>
-                setPaymentMethod(e.target.value)
-              }
+              onChange={(e) => setPaymentMethod(e.target.value)}
             >
               <option>Cash</option>
               <option>Card</option>
@@ -335,13 +368,38 @@ function POS({
 
             <input
               type="number"
-              min={subtotal}
+              min="0"
               placeholder="Enter paid amount"
               value={paidAmount}
-              onChange={(e) =>
-                setPaidAmount(e.target.value)
-              }
+              onChange={(e) => setPaidAmount(e.target.value)}
             />
+
+            {paidAmount.trim() !== "" && remainingAmount > 0 && (
+              <div className="payment-total">
+                <span>Remaining Amount</span>
+                <strong style={{ color: "#dc5656" }}>
+                  Rs. {remainingAmount.toLocaleString()}
+                </strong>
+              </div>
+            )}
+
+            {paidAmount.trim() !== "" && changeAmount > 0 && (
+              <div className="payment-total">
+                <span>Return / Change</span>
+                <strong style={{ color: "#15945b" }}>
+                  Rs. {changeAmount.toLocaleString()}
+                </strong>
+              </div>
+            )}
+
+            {paidAmount.trim() !== "" && paid === subtotal && (
+              <div className="payment-total">
+                <span>Payment Status</span>
+                <strong style={{ color: "#15945b" }}>
+                  Exact Payment
+                </strong>
+              </div>
+            )}
 
             <button
               className="confirm-payment-btn"

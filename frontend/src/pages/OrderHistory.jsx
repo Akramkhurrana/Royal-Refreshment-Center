@@ -7,6 +7,7 @@ import {
   Eye,
   CalendarDays,
   CreditCard,
+  Wallet,
 } from "lucide-react";
 
 import "./OrderHistory.css";
@@ -23,6 +24,23 @@ function OrderHistory({ orders = [] }) {
     (sum, order) => sum + Number(order.total || 0),
     0
   );
+
+  const totalReceived = orders.reduce(
+    (sum, order) => sum + Number(order.paid || 0),
+    0
+  );
+
+  const totalRemaining = orders.reduce(
+    (sum, order) =>
+      sum + Math.max(0, Number(order.total || 0) - Number(order.paid || 0)),
+    0
+  );
+
+  const formatRs = (amount) =>
+    `Rs. ${Number(amount || 0).toLocaleString()}`;
+
+  const getRemaining = (order) =>
+    Math.max(0, Number(order.total || 0) - Number(order.paid || 0));
 
   return (
     <div className="history-page">
@@ -47,18 +65,19 @@ function OrderHistory({ orders = [] }) {
 
         <div className="history-stat-card">
           <span>Total Sales</span>
-          <h3>Rs. {totalSales.toLocaleString()}</h3>
+          <h3>{formatRs(totalSales)}</h3>
           <CreditCard size={25} />
         </div>
 
         <div className="history-stat-card">
-          <span>Average Order</span>
-          <h3>
-            Rs.{" "}
-            {orders.length
-              ? Math.round(totalSales / orders.length).toLocaleString()
-              : 0}
-          </h3>
+          <span>Total Received</span>
+          <h3>{formatRs(totalReceived)}</h3>
+          <Wallet size={25} />
+        </div>
+
+        <div className="history-stat-card">
+          <span>Remaining Payments</span>
+          <h3>{formatRs(totalRemaining)}</h3>
           <Receipt size={25} />
         </div>
       </div>
@@ -90,51 +109,73 @@ function OrderHistory({ orders = [] }) {
                 <th>Items</th>
                 <th>Total</th>
                 <th>Paid</th>
+                <th>Remaining</th>
+                <th>Status</th>
                 <th>Payment</th>
                 <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.number}>
-                  <td>
-                    <strong>#{order.number}</strong>
-                  </td>
+              {filteredOrders.map((order) => {
+                const remaining = getRemaining(order);
 
-                  <td>{order.date}</td>
+                return (
+                  <tr key={order.number}>
+                    <td>
+                      <strong>#{order.number}</strong>
+                    </td>
 
-                  <td>{order.items?.length || 0} items</td>
+                    <td>{order.date}</td>
 
-                  <td>
-                    <strong>
-                      Rs. {Number(order.total).toLocaleString()}
-                    </strong>
-                  </td>
+                    <td>{order.items?.length || 0} items</td>
 
-                  <td>Rs. {Number(order.paid).toLocaleString()}</td>
+                    <td>
+                      <strong>{formatRs(order.total)}</strong>
+                    </td>
 
-                  <td>
-                    <span className="payment-badge">
-                      {order.paymentMethod}
-                    </span>
-                  </td>
+                    <td>{formatRs(order.paid)}</td>
 
-                  <td>
-                    <button
-                      className="history-view-btn"
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      <Eye size={16} />
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      <strong style={{ color: remaining > 0 ? "#dc5656" : "#15945b" }}>
+                        {formatRs(remaining)}
+                      </strong>
+                    </td>
+
+                    <td>
+                      <span
+                        className="payment-badge"
+                        style={{
+                          background: remaining > 0 ? "#fff0e6" : "#e8f8ef",
+                          color: remaining > 0 ? "#c56a20" : "#15945b",
+                        }}
+                      >
+                        {remaining > 0 ? "Partial" : "Paid"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span className="payment-badge">
+                        {order.paymentMethod}
+                      </span>
+                    </td>
+
+                    <td>
+                      <button
+                        className="history-view-btn"
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <Eye size={16} />
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="history-empty">
+                  <td colSpan="9" className="history-empty">
                     <ShoppingBag size={35} />
                     <strong>No orders found</strong>
                     <span>Completed orders will appear here.</span>
@@ -162,6 +203,7 @@ function OrderHistory({ orders = [] }) {
             </div>
 
             <p>Order #{selectedOrder.number}</p>
+
             <p>
               <CalendarDays size={15} /> {selectedOrder.date}
             </p>
@@ -172,11 +214,9 @@ function OrderHistory({ orders = [] }) {
                   <span>
                     {item.name} × {item.quantity}
                   </span>
+
                   <strong>
-                    Rs.{" "}
-                    {(
-                      Number(item.price) * item.quantity
-                    ).toLocaleString()}
+                    {formatRs(Number(item.price) * item.quantity)}
                   </strong>
                 </div>
               ))}
@@ -184,22 +224,30 @@ function OrderHistory({ orders = [] }) {
 
             <div className="history-detail-total">
               <span>Total</span>
-              <strong>
-                Rs. {Number(selectedOrder.total).toLocaleString()}
-              </strong>
+              <strong>{formatRs(selectedOrder.total)}</strong>
             </div>
 
             <div className="history-detail-row">
               <span>Paid Amount</span>
-              <strong>
-                Rs. {Number(selectedOrder.paid).toLocaleString()}
+              <strong>{formatRs(selectedOrder.paid)}</strong>
+            </div>
+
+            <div className="history-detail-row">
+              <span>Remaining Amount</span>
+              <strong style={{ color: getRemaining(selectedOrder) > 0 ? "#dc5656" : "#15945b" }}>
+                {formatRs(getRemaining(selectedOrder))}
               </strong>
             </div>
 
             <div className="history-detail-row">
-              <span>Change</span>
-              <strong>
-                Rs. {Number(selectedOrder.balance).toLocaleString()}
+              <span>Change / Return</span>
+              <strong>{formatRs(selectedOrder.balance)}</strong>
+            </div>
+
+            <div className="history-detail-row">
+              <span>Payment Status</span>
+              <strong style={{ color: getRemaining(selectedOrder) > 0 ? "#c56a20" : "#15945b" }}>
+                {getRemaining(selectedOrder) > 0 ? "Partial Payment" : "Paid"}
               </strong>
             </div>
 

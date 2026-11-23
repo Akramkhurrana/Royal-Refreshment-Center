@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Receipt,
   ArrowUpRight,
-  BarChart3,
 } from "lucide-react";
 
 import "./Dashboard.css";
@@ -45,17 +44,23 @@ function Dashboard({ orders = [], expenses = [] }) {
     startOfPeriod.setFullYear(2000, 0, 1);
   }
 
+  // Filter Orders
+
   const filteredOrders = orders.filter((order) => {
     const date = getDate(order.date);
 
     return date && date >= startOfPeriod && date <= today;
   });
 
+  // Filter Expenses
+
   const filteredExpenses = expenses.filter((expense) => {
     const date = getDate(expense.date);
 
     return date && date >= startOfPeriod && date <= today;
   });
+
+  // Today's Orders
 
   const todayOrders = orders.filter((order) => {
     const date = getDate(order.date);
@@ -67,6 +72,8 @@ function Dashboard({ orders = [], expenses = [] }) {
       date.getFullYear() === today.getFullYear()
     );
   });
+
+  // Total Calculations
 
   const totalSales = filteredOrders.reduce(
     (total, order) => total + Number(order.total || 0),
@@ -84,6 +91,8 @@ function Dashboard({ orders = [], expenses = [] }) {
   );
 
   const netProfit = totalSales - totalExpenses;
+
+  // Statistics Cards
 
   const stats = [
     {
@@ -112,7 +121,8 @@ function Dashboard({ orders = [], expenses = [] }) {
     },
   ];
 
- 
+  // Weekly Sales
+
   const weeklySales = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setHours(0, 0, 0, 0);
@@ -203,11 +213,46 @@ function Dashboard({ orders = [], expenses = [] }) {
     1
   );
 
-  const recentOrders = [...filteredOrders].slice(0, 5);
+  // Top Selling Food Items
 
+  const topSellingItems = Object.values(
+    filteredOrders
+      .flatMap((order) => order.items || [])
+      .reduce((acc, item) => {
+        const name = item.name;
+
+        if (!name) return acc;
+
+        if (!acc[name]) {
+          acc[name] = {
+            name,
+            quantity: 0,
+            total: 0,
+          };
+        }
+
+        acc[name].quantity += Number(item.quantity || 0);
+
+        acc[name].total +=
+          Number(item.price || 0) * Number(item.quantity || 0);
+
+        return acc;
+      }, {})
+  )
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
+
+  // Recent Orders
+
+  const recentOrders = [...filteredOrders]
+    .slice()
+    .reverse()
+    .slice(0, 5);
 
   return (
     <div className="dashboard">
+
+      {/* Welcome Section */}
 
       <div className="dashboard-welcome">
         <div>
@@ -247,6 +292,8 @@ function Dashboard({ orders = [], expenses = [] }) {
         </select>
       </div>
 
+      {/* Statistics Cards */}
+
       <div className="stats-grid">
         {stats.map((stat) => {
           const Icon = stat.icon;
@@ -275,6 +322,8 @@ function Dashboard({ orders = [], expenses = [] }) {
           );
         })}
       </div>
+
+      {/* Weekly Sales and Quick Summary */}
 
       <div className="dashboard-content-grid">
 
@@ -358,6 +407,113 @@ function Dashboard({ orders = [], expenses = [] }) {
         </section>
 
       </div>
+
+      {/* Sales and Expenses Comparison */}
+
+      <section className="dashboard-panel comparison-panel">
+        <div className="panel-heading">
+          <div>
+            <h3>Sales & Expenses Comparison</h3>
+            <p>Daily sales compared with expenses</p>
+          </div>
+        </div>
+
+        <div className="comparison-legend">
+          <span>
+            <i className="legend-dot sales-dot"></i>
+            Sales
+          </span>
+
+          <span>
+            <i className="legend-dot expense-dot"></i>
+            Expenses
+          </span>
+        </div>
+
+        <div className="comparison-chart">
+          {weeklyComparison.map((item) => (
+            <div className="comparison-column" key={item.day}>
+              <div className="comparison-bars">
+
+                <div className="comparison-bar-wrapper">
+                  <div
+                    className="comparison-bar sales-bar"
+                    style={{
+                      height: `${
+                        item.sales > 0
+                          ? Math.max(
+                              (item.sales / maxComparison) * 100,
+                              4
+                            )
+                          : 0
+                      }%`,
+                    }}
+                    title={`Sales: ${formatRs(item.sales)}`}
+                  />
+                </div>
+
+                <div className="comparison-bar-wrapper">
+                  <div
+                    className="comparison-bar expense-bar"
+                    style={{
+                      height: `${
+                        item.expense > 0
+                          ? Math.max(
+                              (item.expense / maxComparison) * 100,
+                              4
+                            )
+                          : 0
+                      }%`,
+                    }}
+                    title={`Expenses: ${formatRs(item.expense)}`}
+                  />
+                </div>
+
+              </div>
+
+              <span>{item.day}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Top Selling Food Items */}
+
+      <section className="dashboard-panel top-selling-panel">
+        <div className="panel-heading">
+          <div>
+            <h3>Top Selling Food Items</h3>
+            <p>Most popular food items in selected period</p>
+          </div>
+        </div>
+
+        <div className="top-selling-list">
+          {topSellingItems.length > 0 ? (
+            topSellingItems.map((item, index) => (
+              <div className="top-selling-item" key={item.name}>
+                <div className="top-selling-rank">
+                  {index + 1}
+                </div>
+
+                <div className="top-selling-info">
+                  <strong>{item.name}</strong>
+                  <span>{item.quantity} sold</span>
+                </div>
+
+                <strong className="top-selling-total">
+                  {formatRs(item.total)}
+                </strong>
+              </div>
+            ))
+          ) : (
+            <p className="top-selling-empty">
+              No sales data available.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Recent Orders */}
 
       <section className="dashboard-panel recent-orders">
         <div className="panel-heading">
